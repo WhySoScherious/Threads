@@ -18,7 +18,7 @@ FLAGS  = -Wall -Wextra -std=gnu99
 all: $(EXE)
 
 $(EXE): $(OBJ)
-  $(GCC) -o $@ $^ 
+	$(GCC) -o $@ $^ 
 
 %.o:%.c
 	$(GCC) $(FLAGS) -c $^

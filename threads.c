@@ -73,7 +73,7 @@ int thread_yield() {
     int old_thread = thread;
 
     // This is the round round scheduler.
-    if (thread != NUM_THREADS) {
+    if (thread != NUM_THREADS - 1) {
         thread++;
     } else {
         thread = 0;
@@ -91,7 +91,7 @@ int thread_yield() {
 
 // Create a thread
 int thread_create(int (*thread_function)(void)) {
-    int newthread = thread++;
+    int newthread = ++thread;
 
     printf("Thread %d in thread_create\n", thread);
 
