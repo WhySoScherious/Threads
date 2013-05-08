@@ -12,7 +12,8 @@
 #define _XOPEN_SOURCE
 #include <ucontext.h>
 
-static ucontext_t ctx[3];
+#define NUM_THREADS 16
+static ucontext_t ctx[NUM_THREADS];
 
 static void test_thread(void);
 static int thread = 0;
@@ -27,9 +28,14 @@ int main(void) {
     printf("Main calling thread_create\n");
 
     // Start one other thread
-    thread_create(&test_thread);
+
+    for (int i = 0; i < NUM_THREADS; i++) {
+        thread_create(&test_thread);
+    }
 
     printf("Main returned from thread_create\n");
+
+    thread = 1;
 
     // Loop, doing a little work then yielding to the other thread
     while(1) {
@@ -66,8 +72,12 @@ static void test_thread(void) {
 int thread_yield() {
     int old_thread = thread;
 
-    // This is the scheduler, it is a bit primitive right now
-    thread = 1-thread;
+    // This is the round round scheduler.
+    if (thread != NUM_THREADS) {
+        thread++;
+    } else {
+        thread = 0;
+    }
 
     printf("Thread %d yielding to thread %d\n", old_thread, thread);
     printf("Thread %d calling swapcontext\n", old_thread);
@@ -81,7 +91,7 @@ int thread_yield() {
 
 // Create a thread
 int thread_create(int (*thread_function)(void)) {
-    int newthread = 1-thread;
+    int newthread = thread++;
 
     printf("Thread %d in thread_create\n", thread);
 
