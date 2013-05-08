@@ -27,15 +27,15 @@ int main(void) {
 
     printf("Main calling thread_create\n");
 
-    // Start one other thread
-
-    for (int i = 0; i < NUM_THREADS; i++) {
+    // Create 15 more threads
+    for (int i = 1; i < NUM_THREADS; i++) {
         thread_create(&test_thread);
     }
 
     printf("Main returned from thread_create\n");
 
-    thread = 1;
+    // Reset the starting thread to thread 0
+    thread = 0;
 
     // Loop, doing a little work then yielding to the other thread
     while(1) {
