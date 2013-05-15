@@ -8,12 +8,16 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
+#include <ucontext.h>
 
 #define _XOPEN_SOURCE
 #include <ucontext.h>
 
 #define NUM_THREADS 16
+#define NUM_SLOTS 160
 static ucontext_t ctx[NUM_THREADS];
+static int scheduler[NUM_SLOTS];
 
 static void test_thread(void);
 static int thread = 0;
@@ -23,6 +27,7 @@ void thread_exit(int);
 // In a real program, it should probably start all of the threads and then wait for them to finish
 // without doing any "real" work
 int main(void) {
+    srand (time (NULL));
     printf("Main starting\n");
 
     printf("Main calling thread_create\n");
@@ -36,6 +41,12 @@ int main(void) {
 
     // Reset the starting thread to thread 0
     thread = 0;
+
+    printf("Handing out lottery tickets to threads\n");
+    for (int i = 0; i < NUM_SLOTS; i++) {
+        scheduler[i] = rand() % NUM_THREADS;
+        printf ("%d\n", scheduler[i]);
+    }
 
     // Loop, doing a little work then yielding to the other thread
     while(1) {
@@ -72,12 +83,8 @@ static void test_thread(void) {
 int thread_yield() {
     int old_thread = thread;
 
-    // This is the round round scheduler.
-    if (thread != NUM_THREADS - 1) {
-        thread++;
-    } else {
-        thread = 0;
-    }
+    // This is the lottery scheduler.
+    thread = scheduler[rand() % NUM_SLOTS];
 
     printf("Thread %d yielding to thread %d\n", old_thread, thread);
     printf("Thread %d calling swapcontext\n", old_thread);
