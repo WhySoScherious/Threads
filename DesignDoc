@@ -1,0 +1,80 @@
+Design Document
+Threads.c
+cmps 111
+
+Purpose:
+The purpose of this assignment is to implement threads in user space.
+Given the starter code threads.c, the goal of this assignmet is to:
+
+1. Implement multiple threads
+2. Add an intelligent scheduler(Using Lottery Scheduling)
+3. Make it preemptive by adding timer interrupts so the threads do not
+   have to call thread_yield() to switch to another thread.
+
+Assumptions:
+The program will implement multiple threads in user space,using
+preemptive scheduling.
+
+Data:
+
+-static ucontext_t ctx[NUM_THREADS]
+
+-static int scheduler[NUM_SLOTS] 
+
+-getcontext: creates a valid execution context which is the same as the
+             current one we have
+
+-swapcontext: stop us from running and restart the other thread
+
+-makecontext: cretes a new context and specifies what function it should run
+
+-setitimer : The  system  provides  each  process  with  three interval
+             timers, each decrementing in a distinct time domain.  When any
+             timer expires, a signal is sent to the process, and the timer
+             restarts.
+             TIMER_VIRTUAL(decrememtns only when the process is executing
+
+            Timer values are defined by the following structures:
+
+            struct itimerval {
+               struct timeval it_interval; /* next value */
+               struct timeval it_value;    /* current value */
+            };
+
+            struct timeval {
+               long tv_sec;                /* seconds */
+               long tv_usec;               /* microseconds */
+            };
+
+
+Operations:
+
+1.static void test_thread(void)
+ -thread that gets started by thread_create
+             
+2.int thread_yield()
+   -Lottery scheduler implemented here
+   -Old thread stops running and restart the next thread
+   
+3.int thread_create(int (*thread_function) (void))
+  -threads are created
+  -stacks set up for each thread
+  -calls getcontext to create a valid execution context the same as the current one
+  -calls makecontext to create new context and specifies which function should run
+  
+4.void thread_handler(int signum)
+  -calls thread_yield()
+  -fucntion used when calling signal(SIGVTALRM, thead_handler);
+  
+5.int main(void)
+  -main thread
+  -calls thread_create() function
+  -creates 16 threads
+  -for loop for handing out lottery tickets to threads
+  -Sets up interrupts to make threads preemptive using signals
+  -struct for setitimer and timer intervals declared here
+  
+6.void thread_exit(int status)
+
+
+
