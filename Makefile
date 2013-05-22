@@ -1,6 +1,6 @@
 #Makefile for Assignment 1
 
-SRC    = threads.c
+SRC    = Threads.c
 OBJ    = $(SRC:.c=.o)
 MKFILE = Makefile
 README = README
