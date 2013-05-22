@@ -86,7 +86,7 @@ int i;
     printf("Handing out lottery tickets to threads\n");
     for (i = 0; i < NUM_SLOTS; i++) {
         scheduler[i] = rand() % NUM_THREADS;
-        printf ("%d\n", scheduler[i]);
+        //printf ("%d\n", scheduler[i]);
     }
 
     /* Loop, doing a little work then yielding to the other thread */
@@ -119,8 +119,10 @@ int thread_yield()
     int old_thread = thread;
 
     /* This is the lottery scheduler. */
-    thread = scheduler[rand() % NUM_SLOTS];
-
+    thread = old_thread;
+    while(thread == old_thread){
+      thread = scheduler[rand() % NUM_SLOTS];
+    }
     printf("Thread %d yielding to thread %d\n", old_thread, thread);
     printf("Thread %d calling swapcontext\n", old_thread);
 
