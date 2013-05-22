@@ -6,14 +6,18 @@
 //
 //
 
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/time.h>
 #include <time.h>
+//#include <ucontext.c>
 #include <ucontext.h>
 
 #define _XOPEN_SOURCE
 #include <ucontext.h>
 
+#define INTERVAL 1
 #define NUM_THREADS 16
 #define NUM_SLOTS 160
 static ucontext_t ctx[NUM_THREADS];
@@ -23,12 +27,20 @@ static void test_thread(void);
 static int thread = 0;
 void thread_exit(int);
 
+void times_up (int i) {
+    printf ("Switching thread\n");
+
+    thread_yield ();
+}
+
 // This is the main thread
 // In a real program, it should probably start all of the threads and then wait for them to finish
 // without doing any "real" work
 int main(void) {
-    srand (time (NULL));
     printf("Main starting\n");
+
+    // Seed the random number generator
+    srand (time (NULL));
 
     printf("Main calling thread_create\n");
 
@@ -45,17 +57,22 @@ int main(void) {
     printf("Handing out lottery tickets to threads\n");
     for (int i = 0; i < NUM_SLOTS; i++) {
         scheduler[i] = rand() % NUM_THREADS;
-        printf ("%d\n", scheduler[i]);
     }
 
-    // Loop, doing a little work then yielding to the other thread
-    while(1) {
-        printf("Main calling thread_yield\n");
+    printf ("Setting up itimer\n");
 
-        thread_yield();
+    struct itimerval itimer;
 
-        printf("Main returned from thread_yield\n");
-    }
+    itimer.it_interval.tv_sec = INTERVAL;
+    itimer.it_interval.tv_usec = 0;
+    itimer.it_value = itimer.it_interval;
+
+    signal (SIGVTALRM, times_up);
+
+    setitimer (ITIMER_VIRTUAL, &itimer, NULL);
+
+    // Loop forever
+    while(1) ;
 
     // We should never get here
     exit(0);
@@ -67,14 +84,7 @@ static void test_thread(void) {
     printf("In test_thread\n");
 
     // Loop, doing a little work then yielding to the other thread
-    while(1) {
-
-        printf("Test_thread calling thread_yield\n");
-
-        thread_yield();
-
-        printf("Test_thread returned from thread_yield\n");
-    }
+    while(1) ;
 
     thread_exit(0);
 }
